@@ -1,28 +1,28 @@
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import { parseMarkdown } from "@sohailalam2/markdown-extractor";
-import lunr from "lunr";
 import MarkdownIt from "markdown-it";
-
+import MiniSearch from "minisearch";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const md = new MarkdownIt();
 
 const buildIndexer = (blogs) => {
-  return lunr(function () {
-    this.ref("file");
-
-    this.field("title");
-    this.field("description");
-    this.field("tags");
-    this.field("body");
-    this.field("h1Elements");
-    this.field("h2Elements");
-    this.field("h3Elements");
-
-    blogs.forEach((blog) => {
-      this.add(blog);
-    });
+  const miniSearch = new MiniSearch({
+    idField: "file",
+    fields: [
+      "title",
+      "description",
+      "tags",
+      "body",
+      "h1Elements",
+      "h2Elements",
+      "h3Elements",
+    ],
+    storeFields: ["title", "file", "description"],
   });
+
+  miniSearch.addAll(blogs);
+  return miniSearch;
 };
 
 const compileFile = async (file) => {

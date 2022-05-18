@@ -3,7 +3,7 @@ import fastifyStatic from "@fastify/static";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
-import lunr from "lunr";
+import MiniSearch from "minisearch";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const fastify = Fastify({ logger: true });
@@ -16,7 +16,19 @@ const getIndexer = async () => {
     encoding: "utf-8",
   });
 
-  cachedIndexer = lunr.Index.load(JSON.parse(indexerData));
+  cachedIndexer = MiniSearch.loadJSON(indexerData, {
+    idField: "file",
+    fields: [
+      "title",
+      "description",
+      "tags",
+      "body",
+      "h1Elements",
+      "h2Elements",
+      "h3Elements",
+    ],
+    storeFields: ["title", "file", "description"],
+  });
   return cachedIndexer;
 };
 
@@ -31,11 +43,10 @@ fastify.get("/search", async function (request, reply) {
 
   reply.header("Access-Control-Allow-Origin", "*");
 
-  reply.send(
-    index.query(function (q) {
-      q.term("*" + request.query.q + "*");
-    })
-  );
+  reply.send({
+    autosuggest: index.autoSuggest(request.query.q),
+    query: index.search(request.query.q),
+  });
 });
 
 // Run the server!

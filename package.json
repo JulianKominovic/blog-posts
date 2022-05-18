@@ -26,7 +26,8 @@
     "highlight.js": "^11.5.1",
     "lunr": "^2.3.9",
     "markdown-it": "^13.0.1",
-    "markdown-it-meta-header": "^1.0.3"
+    "markdown-it-meta-header": "^1.0.3",
+    "minisearch": "^4.0.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.16"
