@@ -1,0 +1,224 @@
+<p>Cargar Google Analytics tiene, lo quieras o no, un impacto en la performance de tu página web. <strong>No es la peor librería de terceros para añadir en tu web</strong> (¡Hola Optimizely 🤪!) porque, en ese aspecto, Google tiene cierta sensibilidad en hacer que tu web cargue rápido pero… <strong>eso no significa que siempre nos vaya a proporcionar la mejor opción</strong>. Por defecto Google nos ofrece un código que puede ser interesante si estamos pensando en usar otros productos de la compañía pero podemos hacer algunas mejoras o… directamente usar otro.</p>
+<p>Pero empecemos por el principio, si vamos a las <code>opciones de nuestra propiedad -&gt; Información de Seguimiento -&gt; Código de seguimiento</code>, allí nos recomendará el siguiente trozo de código para implementar en nuestra web para activar el seguimiento de Google Analytics:</p>
+<pre class="hljs"><code><span class="hljs-comment">&lt;!-- Global site tag (gtag.js) - Google Analytics --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>
+  <span class="hljs-attr">async</span>
+  <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.googletagmanager.com/gtag/js?id=UA-XXXXXXXX-X&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript">
+  <span class="hljs-variable language_">window</span>.<span class="hljs-property">dataLayer</span> = <span class="hljs-variable language_">window</span>.<span class="hljs-property">dataLayer</span> || [];
+  <span class="hljs-keyword">function</span> <span class="hljs-title function_">gtag</span>(<span class="hljs-params"></span>) {
+    dataLayer.<span class="hljs-title function_">push</span>(<span class="hljs-variable language_">arguments</span>);
+  }
+  <span class="hljs-title function_">gtag</span>(<span class="hljs-string">&quot;js&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+
+  <span class="hljs-title function_">gtag</span>(<span class="hljs-string">&quot;config&quot;</span>, <span class="hljs-string">&quot;UA-XXXXXXXX-X&quot;</span>);
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>Lo que normalmente hacemos con este trozo de código es copiarlo en algún lugar de nuestra página y hacerlo funcionar. Veamos algunas pequeñas mejoras que podemos hacer al respecto.</p>
+<h3 id="mejor-en-el-%3Chead%3E-y-en-el-orden-correcto" tabindex="-1">Mejor en el &lt;head&gt; y en el orden correcto</h3>
+<p>El mejor lugar donde cargar el snippet es en el <code>&lt;head&gt;</code>. Al ser un script asíncrono, esto hará que la carga del script no bloquee otros recursos, ni tampoco el parseo del HTML y que, sólo al descargarlo, pausará el parseo del HTML para ejecutarlo.</p>
+<p><strong>Por otra parte, podemos intentar mejorar sensiblemente el orden de carga.</strong> Para ello vamos a dividir el snippet en dos partes. La primera, el script en línea que inicializa el script y, por otra, la carga del script asíncrono. El primero lo colocaremos antes de nuestros estilos (tanto en línea como externos, si los tuvieramos) mientras que el segundo lo pondremos después.</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript">
+  <span class="hljs-variable language_">window</span>.<span class="hljs-property">dataLayer</span> = <span class="hljs-variable language_">window</span>.<span class="hljs-property">dataLayer</span> || [];
+  <span class="hljs-keyword">function</span> <span class="hljs-title function_">gtag</span>(<span class="hljs-params"></span>) {
+    dataLayer.<span class="hljs-title function_">push</span>(<span class="hljs-variable language_">arguments</span>);
+  }
+  <span class="hljs-title function_">gtag</span>(<span class="hljs-string">&quot;js&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+  <span class="hljs-title function_">gtag</span>(<span class="hljs-string">&quot;config&quot;</span>, <span class="hljs-string">&quot;UA-XXXXXXXX-X&quot;</span>);
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;stylesheet&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;style.css&quot;</span> /&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="language-css">
+  <span class="hljs-comment">/* critical-css */</span>
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>
+  <span class="hljs-attr">async</span>
+  <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.googletagmanager.com/gtag/js?id=UA-XXXXXXXX-X&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p><strong>El CSS es un recurso crítico y tiene la prioridad más alta de carga,</strong> ya que el navegador considera que es crucial para poder pintar la página y enseñársela al usuario. Parsear el script en línea tiene un coste minúsculo y de esta forma no bloquearemos nada. Más adelante haré un artículo explicando esto pero, por ahora, probad si esto os funciona. 😉</p>
+<p>Al final, el resultado sería este:
+{{&lt; img src=“<a href="https://i.loli.net/2018/12/10/5c0e428ad3ee6.png">https://i.loli.net/2018/12/10/5c0e428ad3ee6.png</a>” alt=“Resultado tras aplicar Google Tag Manager para cargar Google Analytics” align=“”&gt;}}</p>
+<p>Como véis, para el primer recurso hay una barra lila enorme. Eso ha sido la negociación de los certificados SSL y ha evitado que pudieramos empezar a trackear con Google Analytics antes. ¿Podemos hacer algo para mejorarlo 🤔?</p>
+<h3 id="ayuda-al-navegador-a-cargar-m%C3%A1s-r%C3%A1pido-los-recursos" tabindex="-1">Ayuda al navegador a cargar más rápido los recursos</h3>
+<p>Ya que sabemos que nuestro snippet va a cargar unos recursos en concreto, podemos ayudar a nuestro navegador a cargarlos cuanto antes. Para ello vamos a usar los Resource Hints (sugerencia de recursos):</p>
+<p><code>preconnect</code>: informa al usuario que vas a hacer una conexión con otro origen, de forma que te gustaría comenzarla lo antes posible. Esto hará que el navegador haga la conexión con el dominio antes, ahorrando más adelante la conexión DNS, redirecciones y la negociación de los recursos.</p>
+<p><code>dns-prefetch</code>: es una parte de lo que hace preconnect, la resolución del nombre del sistema de nombres de dominio. Por lo tanto es menos potente pero, sin embargo, tiene un soporte mayor, así que también lo usaremos y el navegador ya detectará cuál es más ventajosa.</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preconnect dns-prefetch&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;https://www.googletagmanager.com&quot;</span> /&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preconnect dns-prefetch&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;https://www.google-analytics.com&quot;</span> /&gt;</span>
+</code></pre>
+<p>Estas líneas pueden ir sin ningún problema después de las líneas anteriores, ya que el navegador las detectará al descargar el archivo HTML y lo usará incluso antes de empezar a descargar los recursos.</p>
+<p>Por otra parte, <strong>existe una mala práctica en este caso que sería usar <code>preload</code> para indicarle al navegador que debe precargar los recursos de Analytics.</strong> Aunque es cierto que sí vamos a cargar sí o sí esos recursos, también es verdad que seguramente tengamos recursos mucho más importantes que las analíticas, que al fin y al cabo no le dan valor al usuario, que precargar. Así que piénsatelo antes de usarlo.</p>
+<p>En cualquier caso, tras usar el consejo de esta sección, la carga quedaría de la siguiente forma:</p>
+<p>{{&lt; img src=“<a href="https://i.loli.net/2018/12/10/5c0e46e5a37c0.png">https://i.loli.net/2018/12/10/5c0e46e5a37c0.png</a>” alt=“Con preconnect y prefetch, hemos mejorado algo la carga de los recursos” align=“”&gt;}}</p>
+<h3 id="cargar-google-analytics-directamente" tabindex="-1">Cargar Google Analytics directamente</h3>
+<p><strong>¿Es Google Analytics el único servicio de Google que estás usando en tu página?</strong> ¿Eres desarrollador o tienes acceso rápido y directo al equipo para añadir los eventos que necesitas? <strong>Entonces, seguramente, no necesitas utilizar el snippet que te ha proporcionado Google.</strong></p>
+<p>Como comentaba antes, el snippet que por defecto te da Google es sencillo y te permite copiar, pegar y empezar a funcionar. Sin embargo, todavía puedes utilizar directamente Google Analytics sin necesidad de cargar el archivo <code>gtag.js</code> y de esta forma conseguir una mejora importante a la hora de cargar la librería.</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript">
+  <span class="hljs-variable language_">window</span>.<span class="hljs-property">ga</span> =
+    <span class="hljs-variable language_">window</span>.<span class="hljs-property">ga</span> ||
+    <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+      (ga.<span class="hljs-property">q</span> = ga.<span class="hljs-property">q</span> || []).<span class="hljs-title function_">push</span>(<span class="hljs-variable language_">arguments</span>);
+    };
+  ga.<span class="hljs-property">l</span> = +<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>();
+  <span class="hljs-title function_">ga</span>(<span class="hljs-string">&quot;create&quot;</span>, <span class="hljs-string">&quot;UA-XXXXXXXX-X&quot;</span>, <span class="hljs-string">&quot;auto&quot;</span>);
+  <span class="hljs-title function_">ga</span>(<span class="hljs-string">&quot;send&quot;</span>, <span class="hljs-string">&quot;pageview&quot;</span>);
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">async</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.google-analytics.com/analytics.js&quot;</span> /&gt;</span>
+</code></pre>
+<p>Igual que en el anterior, también podemos hacer un preconnect y un dns-prefetch de los recursos, además de optimizar el orden de carga, de forma que nos quedaría algo así:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;preconnect dns-prefetch&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;https://www.google-analytics.com&quot;</span> /&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript">
+  <span class="hljs-variable language_">window</span>.<span class="hljs-property">ga</span> =
+    <span class="hljs-variable language_">window</span>.<span class="hljs-property">ga</span> ||
+    <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+      (ga.<span class="hljs-property">q</span> = ga.<span class="hljs-property">q</span> || []).<span class="hljs-title function_">push</span>(<span class="hljs-variable language_">arguments</span>);
+    };
+  ga.<span class="hljs-property">l</span> = +<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>();
+  <span class="hljs-title function_">ga</span>(<span class="hljs-string">&quot;create&quot;</span>, <span class="hljs-string">&quot;UA-XXXXXXXX-X&quot;</span>, <span class="hljs-string">&quot;auto&quot;</span>);
+  <span class="hljs-title function_">ga</span>(<span class="hljs-string">&quot;send&quot;</span>, <span class="hljs-string">&quot;pageview&quot;</span>);
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="language-css">
+  <span class="hljs-comment">/* critical-css */</span>
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">async</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.google-analytics.com/analytics.js&quot;</span> /&gt;</span>
+</code></pre>
+<p>Como podéis ver, <strong>ahora solo tenemos que hacer preconnect y prefetch de un solo recurso</strong>. Y ahí ya tenemos una pista de la gran ventaja que tiene este método y es que, en el caso anterior debíamos hacer dos requests para poder empezar a usar Google Analytics mientras que en este método sólo tendremos que hacer una. ¿Y cómo quedaría esto? Una request menos, 31.5KB menos de descarga y casi 100ms más rápido empezar a hacer tracking en desktop.</p>
+<p>{{&lt; img src=“<a href="https://i.loli.net/2018/12/10/5c0e47d8b3ae8.png">https://i.loli.net/2018/12/10/5c0e47d8b3ae8.png</a>” alt=“Cargando sólo Google Analytcs, mejoramos en 100ms la carga en desktop” align=“”&gt;}}</p>
+<h3 id="usar-el-minimal-google-analytics" tabindex="-1">Usar el minimal Google Analytics</h3>
+<p>Existe todavía una opción todavía más hardcore para conseguir utilizar Google Analytics con un impacto mínimo en la performance de tu página. Se llama <a href="https://minimalanalytics.com/">Minimal Google Analytics</a> y es un pequeño snippet de código que te hace que no tengas que cargar <strong>ninguna librería externa para utilizar Google Analytics</strong>. Sí, has leído bien, puedes utilizar un pequeño script en línea para poder utilizar algunas funcionalidades de Google Analytics.</p>
+<p>El snippet, que <strong>son sin gzipear 1.5KB</strong>, es este:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript">
+  (<span class="hljs-keyword">function</span> (<span class="hljs-params">a, b, c</span>) {
+    <span class="hljs-keyword">var</span> d = a.<span class="hljs-property">history</span>,
+      e = <span class="hljs-variable language_">document</span>,
+      f = navigator || {},
+      g = <span class="hljs-variable language_">localStorage</span>,
+      h = <span class="hljs-built_in">encodeURIComponent</span>,
+      i = d.<span class="hljs-property">pushState</span>,
+      k = <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>().<span class="hljs-title function_">toString</span>(<span class="hljs-number">36</span>);
+      },
+      l = <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+        <span class="hljs-keyword">return</span> g.<span class="hljs-property">cid</span> || (g.<span class="hljs-property">cid</span> = <span class="hljs-title function_">k</span>()), g.<span class="hljs-property">cid</span>;
+      },
+      m = <span class="hljs-keyword">function</span> (<span class="hljs-params">r</span>) {
+        <span class="hljs-keyword">var</span> s = [];
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> t <span class="hljs-keyword">in</span> r)
+          r.<span class="hljs-title function_">hasOwnProperty</span>(t) &amp;&amp;
+            <span class="hljs-keyword">void</span> <span class="hljs-number">0</span> !== r[t] &amp;&amp;
+            s.<span class="hljs-title function_">push</span>(<span class="hljs-title function_">h</span>(t) + <span class="hljs-string">&quot;=&quot;</span> + <span class="hljs-title function_">h</span>(r[t]));
+        <span class="hljs-keyword">return</span> s.<span class="hljs-title function_">join</span>(<span class="hljs-string">&quot;&amp;&quot;</span>);
+      },
+      n = <span class="hljs-keyword">function</span> (<span class="hljs-params">r, s, t, u, v, w, x</span>) {
+        <span class="hljs-keyword">var</span> z = <span class="hljs-string">&quot;https://www.google-analytics.com/collect&quot;</span>,
+          A = <span class="hljs-title function_">m</span>({
+            <span class="hljs-attr">v</span>: <span class="hljs-string">&quot;1&quot;</span>,
+            <span class="hljs-attr">ds</span>: <span class="hljs-string">&quot;web&quot;</span>,
+            <span class="hljs-attr">aip</span>: c.<span class="hljs-property">anonymizeIp</span> ? <span class="hljs-number">1</span> : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">tid</span>: b,
+            <span class="hljs-attr">cid</span>: <span class="hljs-title function_">l</span>(),
+            <span class="hljs-attr">t</span>: r || <span class="hljs-string">&quot;pageview&quot;</span>,
+            <span class="hljs-attr">sd</span>:
+              c.<span class="hljs-property">colorDepth</span> &amp;&amp; screen.<span class="hljs-property">colorDepth</span>
+                ? screen.<span class="hljs-property">colorDepth</span> + <span class="hljs-string">&quot;-bits&quot;</span>
+                : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">dr</span>: e.<span class="hljs-property">referrer</span> || <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">dt</span>: e.<span class="hljs-property">title</span>,
+            <span class="hljs-attr">dl</span>: e.<span class="hljs-property">location</span>.<span class="hljs-property">origin</span> + e.<span class="hljs-property">location</span>.<span class="hljs-property">pathname</span> + e.<span class="hljs-property">location</span>.<span class="hljs-property">search</span>,
+            <span class="hljs-attr">ul</span>: c.<span class="hljs-property">language</span> ? (f.<span class="hljs-property">language</span> || <span class="hljs-string">&quot;&quot;</span>).<span class="hljs-title function_">toLowerCase</span>() : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">de</span>: c.<span class="hljs-property">characterSet</span> ? e.<span class="hljs-property">characterSet</span> : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">sr</span>: c.<span class="hljs-property">screenSize</span>
+              ? (a.<span class="hljs-property">screen</span> || {}).<span class="hljs-property">width</span> + <span class="hljs-string">&quot;x&quot;</span> + (a.<span class="hljs-property">screen</span> || {}).<span class="hljs-property">height</span>
+              : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">vp</span>:
+              c.<span class="hljs-property">screenSize</span> &amp;&amp; a.<span class="hljs-property">visualViewport</span>
+                ? (a.<span class="hljs-property">visualViewport</span> || {}).<span class="hljs-property">width</span> +
+                  <span class="hljs-string">&quot;x&quot;</span> +
+                  (a.<span class="hljs-property">visualViewport</span> || {}).<span class="hljs-property">height</span>
+                : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">ec</span>: s || <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">ea</span>: t || <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">el</span>: u || <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">ev</span>: v || <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">exd</span>: w || <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+            <span class="hljs-attr">exf</span>: <span class="hljs-string">&quot;undefined&quot;</span> != <span class="hljs-keyword">typeof</span> x &amp;&amp; !<span class="hljs-number">1</span> == !!x ? <span class="hljs-number">0</span> : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>,
+          });
+        <span class="hljs-keyword">if</span> (f.<span class="hljs-property">sendBeacon</span>) f.<span class="hljs-title function_">sendBeacon</span>(z, A);
+        <span class="hljs-keyword">else</span> {
+          <span class="hljs-keyword">var</span> y = <span class="hljs-keyword">new</span> <span class="hljs-title class_">XMLHttpRequest</span>();
+          y.<span class="hljs-title function_">open</span>(<span class="hljs-string">&quot;POST&quot;</span>, z, !<span class="hljs-number">0</span>), y.<span class="hljs-title function_">send</span>(A);
+        }
+      };
+    (d.<span class="hljs-property">pushState</span> = <span class="hljs-keyword">function</span> (<span class="hljs-params">r</span>) {
+      <span class="hljs-keyword">return</span> (
+        <span class="hljs-string">&quot;function&quot;</span> == <span class="hljs-keyword">typeof</span> d.<span class="hljs-property">onpushstate</span> &amp;&amp; d.<span class="hljs-title function_">onpushstate</span>({ <span class="hljs-attr">state</span>: r }),
+        <span class="hljs-built_in">setTimeout</span>(n, c.<span class="hljs-property">delay</span> || <span class="hljs-number">10</span>),
+        i.<span class="hljs-title function_">apply</span>(d, <span class="hljs-variable language_">arguments</span>)
+      );
+    }),
+      <span class="hljs-title function_">n</span>(),
+      (a.<span class="hljs-property">ma</span> = {
+        <span class="hljs-attr">trackEvent</span>: <span class="hljs-keyword">function</span> <span class="hljs-title function_">o</span>(<span class="hljs-params">r, s, t, u</span>) {
+          <span class="hljs-keyword">return</span> <span class="hljs-title function_">n</span>(<span class="hljs-string">&quot;event&quot;</span>, r, s, t, u);
+        },
+        <span class="hljs-attr">trackException</span>: <span class="hljs-keyword">function</span> <span class="hljs-title function_">q</span>(<span class="hljs-params">r, s</span>) {
+          <span class="hljs-keyword">return</span> <span class="hljs-title function_">n</span>(<span class="hljs-string">&quot;exception&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, r, s);
+        },
+      });
+  })(<span class="hljs-variable language_">window</span>, <span class="hljs-string">&quot;UA-XXXXXXXXX-X&quot;</span>, {
+    <span class="hljs-attr">anonymizeIp</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">colorDepth</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">characterSet</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">screenSize</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">language</span>: <span class="hljs-literal">true</span>,
+  });
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>Como véis, tenéis que cambiar el <code>UA-XXXXXXXXX-X</code> por vuestro tracking id.</p>
+<p>Las ventajas, como os podéis imaginar, es que con esto tendremos una request menos y no descargaremos los ~17KB de la librería de Google Analytics. Pero tiene tres desventajas:</p>
+<ul>
+<li><strong>Este snippet no está soportado oficialmente por Google.</strong> Esto significa que, eventualmente, es posible que las opciones de Google Analytics o la API de <code>collect</code> pueda cambiar y esto deje de funcionar correctamente. Cargar la librería nos asegura que usaremos siempre la última versión y Google se encargará por nosotros de mantener la compatibilidad.</li>
+<li>No nos permite utilizar algunas funcionalidades avanzadas como, por ejemplo, trackear Adwords aunque sí podemos enviar eventos y excepciones con el siguiente código.</li>
+</ul>
+<pre class="hljs"><code>ma.<span class="hljs-title function_">trackEvent</span>(<span class="hljs-string">&quot;Category&quot;</span>, <span class="hljs-string">&quot;Action&quot;</span>, <span class="hljs-string">&quot;Label&quot;</span>, <span class="hljs-string">&quot;Value&quot;</span>); <span class="hljs-comment">// event</span>
+ma.<span class="hljs-title function_">trackException</span>(<span class="hljs-string">&quot;Description&quot;</span>, <span class="hljs-string">&quot;Fatal&quot;</span>); <span class="hljs-comment">// exception</span>
+</code></pre>
+<p>Además, tened en cuenta que, por buenas razones, utiliza el flag <code>anonymizeIp</code> por defecto. De forma que todas las IPs de tus usuarios permanecen anónimas dentro de tu web.</p>
+<p>En este caso, todavía, recomiendo dejar <code>preconnect </code> y <code>dns-prefetch</code> para el dominio de <code>https://www.google-analytics.com</code></p>
+<p>Pero lo interesante, que me imagino que lo estáis esperando, es la imagen de network que nos queda. <strong>0 requests de librerías externas, 17KB menos a descargar y unos cuantos ms menos hasta el pageview.</strong></p>
+<p>{{&lt; img src=“<a href="https://i.loli.net/2018/12/17/5c168d8406716.png">https://i.loli.net/2018/12/17/5c168d8406716.png</a>” alt=“Usar Google Minimal Analytcs nos permite no hacer requests de librerías para empezar a usar el tracking” align=“”&gt;}}</p>
+<h2 id="resumiendo-las-opciones" tabindex="-1">Resumiendo las opciones</h2>
+<h3 id="usa-analytics.js-si%E2%80%A6" tabindex="-1">Usa analytics.js si…</h3>
+<p>✅ sólo te interesa cargar Google Analytics.&lt;br /&gt;
+✅ puedes añadir eventos o funnels en Analytics directamente en el código.&lt;br /&gt;
+✅ eres exigente con la performance de tu web y quieres cargar lo normal.&lt;br /&gt;
+✅ todavía te interesa utilizar algunas funcionalidades especiales de Analytics como tracking con Adwords.</p>
+<h3 id="usa-gtag.js-si%E2%80%A6" tabindex="-1">Usa gtag.js si…</h3>
+<p>✅ vas a usar otros productos de Google como Optimize o Adwords.&lt;br /&gt;
+✅ quieres usar otras funcionalidades de Google Tag Manager.&lt;br /&gt;
+✅ necesitas publicar muchos cambios de eventos de Google Analytics sin necesidad de desarrolladores.&lt;br /&gt;</p>
+<p>✅ la performance no te quita el sueño (por más que debería! 🤪)</p>
+<h3 id="usa-minimal-google-analytics-snippet" tabindex="-1">Usa minimal Google Analytics snippet</h3>
+<p>✅ sólo quieres utilizar lo más básico de Google Analytics.&lt;br /&gt;
+✅sabes lo que estás haciendo al cargar este script en línea y aceptas no usar algo oficial de Google para trackear tu página. &lt;br /&gt;
+✅eres MUY exigente (como yo! 🙃) con la performance de tu página.</p>
+<h3 id="y-uses-el-que-uses%E2%80%A6" tabindex="-1">Y uses el que uses…</h3>
+<p>✅ coloca en el <code>&lt;head&gt;</code> el snippet de código.&lt;br /&gt;
+✅ separa el snippet para colocar el código en línea antes de tus estilos y el otro después (en el caso del minimal GA, siempre antes).&lt;br /&gt;
+✅ usa preconnect y dns-prefetch para cargar cuanto antes la librería o las conexiones necesarias.</p>
+<h2 id="bonus-points-%F0%9F%8C%9F!" tabindex="-1">Bonus points 🌟!</h2>
+<p>Si todavía quieres ir más allá, <strong>puedes usar Service Workers para conseguir dos cosas</strong>: sincronizar el tracking cuando la conexión del usuario no es muy buena y para cachear la request a ga.js. Esto es especialmente interesante si estás creando una aplicación o web que debería funcionar en modo sin conexión.</p>
+<p><strong>Para activar Google Analytics de forma offline</strong>, sólo tenéis que usar el siguiente código en vuestro Service Worker, gracias a workbox:</p>
+<pre class="hljs"><code><span class="hljs-title function_">importScripts</span>(
+  <span class="hljs-string">&quot;https://storage.googleapis.com/workbox-cdn/releases/3.6.1/workbox-sw.js&quot;</span>
+);
+
+<span class="hljs-comment">// este register route sólo en el caso de querer usar analytics.js o gtag.js</span>
+workbox.<span class="hljs-property">routing</span>.<span class="hljs-title function_">registerRoute</span>(
+  <span class="hljs-string">&quot;https://www.google-analytics.com/analytics.js&quot;</span>,
+  workbox.<span class="hljs-property">strategies</span>.<span class="hljs-title function_">staleWhileRevalidate</span>()
+);
+
+workbox.<span class="hljs-property">googleAnalytics</span>.<span class="hljs-title function_">initialize</span>();
+</code></pre>

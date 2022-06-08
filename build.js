@@ -1,35 +1,48 @@
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import { parseMarkdown } from "@sohailalam2/markdown-extractor";
-import MarkdownIt from "markdown-it";
+
 import MiniSearch from "minisearch";
+import { JSDOM } from "jsdom";
+import headings from "./building/utils/headings.mjs";
+import markdown from "./building/utils/markdown.mjs";
+import searchingIndexConfig from "./building/search-engine/config.mjs";
+
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const md = new MarkdownIt();
+
+const commonTags = {};
+const commonPostTags = {};
 
 const buildIndexer = (blogs) => {
-  const miniSearch = new MiniSearch({
-    idField: "file",
-    fields: [
-      "title",
-      "description",
-      "tags",
-      "body",
-      "h1Elements",
-      "h2Elements",
-      "h3Elements",
-    ],
-    storeFields: ["title", "file", "description"],
-  });
+  const miniSearch = new MiniSearch(searchingIndexConfig);
 
   miniSearch.addAll(blogs);
   return miniSearch;
 };
 
+const buildTags = (tagsBag, tags, filename) => {
+  tags.forEach((tag) => {
+    const formattedTag = tag.toUpperCase().replace(/ /gi, "_").trim();
+    if (tagsBag[formattedTag] === undefined)
+      tagsBag[formattedTag] = {
+        matches: 0,
+        posts: [],
+        icon: `/icons/${formattedTag}.svg`,
+      };
+    tagsBag[formattedTag] = {
+      matches: tagsBag[formattedTag].matches + 1,
+      posts: [...tagsBag[formattedTag].posts, filename],
+      icon: `/icons/${formattedTag}.svg`,
+    };
+  });
+};
+
 const compileFile = async (file) => {
   const data = await fs.readFile(__dirname + "static/posts/" + file, "utf8");
 
-  const { html, metadata } = parseMarkdown(data);
+  const { metadata } = parseMarkdown(data);
 
+  const html = markdown.render(data);
   await fs.writeFile(
     __dirname +
       "static/posts/" +
@@ -49,31 +62,34 @@ const compileFile = async (file) => {
   );
 
   //   INDEXING HEADINGS
-  console.log(md.parse(data));
-  const htmlParsedElements = md.parse(data);
-  const h1Elements = [];
-  const h2Elements = [];
-  const h3Elements = [];
 
-  htmlParsedElements.forEach((element) => {
-    if (element.tag === "h1") {
-      h1Elements.push(element.content);
-    }
-    if (element.tag === "h2") {
-      h2Elements.push(element.content);
-    }
-    if (element.tag === "h3") {
-      h3Elements.push(element.content);
-    }
+  const headingElements = {};
+
+  const dom = new JSDOM(html);
+
+  headings.forEach((h) => {
+    dom.window.document.querySelectorAll(h).forEach((item) => {
+      if (headingElements[h] === undefined) headingElements[h] = [];
+      headingElements[h].push(item.textContent);
+    });
   });
+
+  if (metadata.tags)
+    buildTags(commonTags, metadata.tags, file.slice(0, file.lastIndexOf(".")));
+
+  if (metadata.postTags)
+    buildTags(
+      commonPostTags,
+      metadata.postTags,
+      file.slice(0, file.lastIndexOf("."))
+    );
 
   return {
     metadata,
+    ...metadata,
     file: file.slice(0, file.lastIndexOf(".")),
     body: data,
-    h1Elements,
-    h2Elements,
-    h3Elements,
+    ...headingElements,
   };
 };
 
@@ -94,7 +110,6 @@ const build = async () => {
   });
 
   console.log("BLOGS");
-  console.log(blogsKeyValue);
   await fs.writeFile(
     __dirname + "static/indexer.json",
     JSON.stringify(buildIndexer(blogs).toJSON())
@@ -102,6 +117,19 @@ const build = async () => {
   await fs.writeFile(
     __dirname + "static/blogs.json",
     JSON.stringify(blogsKeyValue)
+  );
+
+  console.log("COMMON TAGS");
+  console.log(commonTags);
+  await fs.writeFile(
+    __dirname + "static/most-common-tags.json",
+    JSON.stringify(commonTags)
+  );
+  console.log("COMMON POST TAGS");
+  console.log(commonPostTags);
+  await fs.writeFile(
+    __dirname + "static/most-common-posts-tags.json",
+    JSON.stringify(commonPostTags)
   );
 };
 

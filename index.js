@@ -4,11 +4,17 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import MiniSearch from "minisearch";
+import fastifyCors from "@fastify/cors";
+import searchingIndexConfig from "./building/search-engine/config.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const fastify = Fastify({ logger: true });
 
 let cachedIndexer = undefined;
+let cachedPosts = undefined;
+let cachedCommonTags = undefined;
+let cachedCommonPostTags = undefined;
+
 const getIndexer = async () => {
   if (cachedIndexer) return cachedIndexer;
 
@@ -16,25 +22,54 @@ const getIndexer = async () => {
     encoding: "utf-8",
   });
 
-  cachedIndexer = MiniSearch.loadJSON(indexerData, {
-    idField: "file",
-    fields: [
-      "title",
-      "description",
-      "tags",
-      "body",
-      "h1Elements",
-      "h2Elements",
-      "h3Elements",
-    ],
-    storeFields: ["title", "file", "description"],
-  });
+  cachedIndexer = MiniSearch.loadJSON(indexerData, searchingIndexConfig);
   return cachedIndexer;
 };
 
+const getPosts = async () => {
+  if (cachedPosts) return cachedPosts;
+  const postsData = await fs.readFile(__dirname + "static/blogs.json", {
+    encoding: "utf-8",
+  });
+
+  cachedPosts = JSON.parse(postsData);
+  return cachedPosts;
+};
+
+const getCommonTags = async () => {
+  if (cachedCommonTags) return cachedCommonTags;
+  const commonTags = await fs.readFile(
+    __dirname + "static/most-common-tags.json",
+    {
+      encoding: "utf-8",
+    }
+  );
+
+  cachedCommonTags = JSON.parse(commonTags);
+  return cachedCommonTags;
+};
+
+const getCommonPostTags = async () => {
+  if (cachedCommonPostTags) return cachedCommonPostTags;
+  const commonTags = await fs.readFile(
+    __dirname + "static/most-common-posts-tags.json",
+    {
+      encoding: "utf-8",
+    }
+  );
+
+  cachedCommonPostTags = JSON.parse(commonTags);
+  return cachedCommonPostTags;
+};
+
+//REGISTERS
 //STATIC FILES
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, "static"),
+});
+//CORS
+fastify.register(fastifyCors, {
+  origin: "*",
 });
 
 // Declare a route
@@ -49,8 +84,66 @@ fastify.get("/search", async function (request, reply) {
   });
 });
 
+fastify.get("/posts", async function (request, reply) {
+  const posts = await getPosts();
+
+  reply.header("Access-Control-Allow-Origin", "*");
+
+  if (request.query.tags) {
+    const fileWithThisTag = [];
+    const formattedRequestTagArray = request.query.tags.map((t) =>
+      t.toUpperCase()
+    );
+
+    const tags = await getCommonTags();
+
+    formattedRequestTagArray.forEach(() => {});
+
+    const tagInfo = formattedRequestTagArray.map(
+      () => tags[formattedRequestTag]
+    );
+
+    tagInfo?.posts?.forEach((element) => {
+      fileWithThisTag.push(posts[element]);
+    });
+    reply.send(fileWithThisTag);
+  }
+
+  reply.send(posts);
+});
+fastify.get("/common-tags", async function (request, reply) {
+  const tags = await getCommonTags();
+  const objectSorted = Object.entries(tags).sort(
+    (tag, nextTag) => tag.matches > nextTag.matches
+  );
+  const finalObject = objectSorted.map(([key, value]) => {
+    return {
+      key,
+      icon: value.icon,
+    };
+  });
+  reply.header("Access-Control-Allow-Origin", "*");
+
+  reply.send(finalObject);
+});
+fastify.get("/common-post-tags", async function (request, reply) {
+  const tags = await getCommonPostTags();
+  const objectSorted = Object.entries(tags).sort(
+    (tag, nextTag) => tag.matches > nextTag.matches
+  );
+  const finalObject = objectSorted.map(([key, value]) => {
+    return {
+      key,
+      icon: value.icon,
+    };
+  });
+  reply.header("Access-Control-Allow-Origin", "*");
+
+  reply.send(finalObject);
+});
+
 // Run the server!
-fastify.listen(process.env.PORT || 3000, function (err, address) {
+fastify.listen(process.env.PORT || 4000, function (err, address) {
   if (err) {
     fastify.log.error(err);
     process.exit(1);

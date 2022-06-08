@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon ./index.js",
+    "build:posts": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,14 +21,21 @@
   },
   "homepage": "https://github.com/JulianKominovic/blog-posts#readme",
   "dependencies": {
+    "@fastify/cors": "^7.0.0",
     "@fastify/static": "^5.0.2",
     "@sohailalam2/markdown-extractor": "0.2.3",
     "fastify": "^3.29.0",
     "highlight.js": "^11.5.1",
+    "jsdom": "^19.0.0",
     "lunr": "^2.3.9",
     "markdown-it": "^13.0.1",
+    "markdown-it-anchor": "^8.6.4",
+    "markdown-it-highlight": "^0.2.0",
+    "markdown-it-id-and-toc": "^3.6.2",
+    "markdown-it-meta": "^0.0.1",
     "markdown-it-meta-header": "^1.0.3",
-    "minisearch": "^4.0.3"
+    "minisearch": "^4.0.3",
+    "query-selector": "^2.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.16"
