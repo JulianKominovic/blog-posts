@@ -25,7 +25,6 @@ jobs:
         env:
           CI_COMMIT_MESSAGE: Continuous Integration Build Posts
           CI_COMMIT_AUTHOR: CI
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           BRANCH: deploy
         run: |
           git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
@@ -34,5 +33,5 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ env.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}
           branch: ${{ env.BRANCH }}
