@@ -89,27 +89,27 @@ fastify.get("/posts", async function (request, reply) {
 
   reply.header("Access-Control-Allow-Origin", "*");
 
+  console.log("QUERYS");
+  console.log(request.query.tags);
   if (request.query.tags) {
-    const fileWithThisTag = [];
-    const formattedRequestTagArray = request.query.tags.map((t) =>
-      t.toUpperCase()
+    const queryTags = request.query.tags.split(",");
+
+    const formattedRequestTagArray = queryTags.map((t) =>
+      t.trim().toUpperCase()
     );
 
     const tags = await getCommonTags();
+    const posts = await getPosts();
 
-    formattedRequestTagArray.forEach(() => {});
-
-    const tagInfo = formattedRequestTagArray.map(
-      () => tags[formattedRequestTag]
-    );
-
-    tagInfo?.posts?.forEach((element) => {
-      fileWithThisTag.push(posts[element]);
+    const filesToSend = {};
+    formattedRequestTagArray.forEach((item) => {
+      tags[item]?.posts.forEach((post) => (filesToSend[post] = posts[post]));
     });
-    reply.send(fileWithThisTag);
-  }
 
-  reply.send(posts);
+    reply.send(filesToSend);
+  } else {
+    reply.send(posts);
+  }
 });
 fastify.get("/common-tags", async function (request, reply) {
   const tags = await getCommonTags();
