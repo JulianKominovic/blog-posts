@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  Setting-Things-Up:
+  Build-posts:
     runs-on: [ubuntu-latest]
     steps:
       - run: echo "Seteando el entorno..."
@@ -17,10 +17,5 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install --production
-  Build:
-    runs-on: [ubuntu-latest]
-    needs: Setting-Things-Up
-    steps:
-      - run: echo "Iniciando build..."
       - run: npm run build:posts
-      - run: ll
+      - run: ls
