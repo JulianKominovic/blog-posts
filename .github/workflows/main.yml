@@ -18,14 +18,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install --production
       - run: npm run build:posts
-      - name: GIT commit and push all posts built
+      - name: Deploy
+        uses: s0/git-publish-subdir-action@develop
         env:
-          CI_COMMIT_MESSAGE: Continuous Integration Build Posts
-          CI_COMMIT_AUTHOR: CI
-        run: |
-          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-          git config --global user.email "juliankominovic@gmail.com"
-          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
-          git checkout deploy
-          git pull . master
-          git push
+          REPO: self
+          BRANCH: deploy
+          FOLDER: static
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
