@@ -40,7 +40,7 @@ You will like those projects!
 
 #### h4 Heading
 
-##### h5 Heading
+##### h5 Heading.
 
 ###### h6 Heading.
 
