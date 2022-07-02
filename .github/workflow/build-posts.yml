@@ -1,0 +1,25 @@
+name: Build posts
+on:
+  push:
+    paths:
+      - "static/**"
+    branches:
+      - master
+
+jobs:
+  Setting-Things-Up:
+    runs-on: [ubuntu-latest]
+    steps:
+      - run: echo "Seteando el entorno..."
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install --production
+  Build:
+    runs-on: [ubuntu-latest]
+    steps:
+      - run: echo "Iniciando build..."
+      - run: npm run build:posts
+      - run: ll
