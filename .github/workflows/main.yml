@@ -24,4 +24,4 @@ jobs:
           REPO: self
           BRANCH: deploy
           FOLDER: static
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
