@@ -12,16 +12,27 @@ jobs:
     steps:
       - run: echo "Seteando el entorno..."
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install --production
       - run: npm run build:posts
-      - name: Deploy
-        uses: s0/git-publish-subdir-action@develop
+      - name: GIT commit all posts built
         env:
-          REPO: self
-          BRANCH: deploy
-          FOLDER: static
+          CI_COMMIT_MESSAGE: Continuous Integration Build Posts
+          CI_COMMIT_AUTHOR: CI
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          BRANCH: deploy
+        run: |
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "juliankominovic@gmail.com"
+          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ env.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH }}
