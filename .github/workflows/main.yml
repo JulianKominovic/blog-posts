@@ -21,17 +21,16 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install --production
       - run: npm run build:posts
-      - name: GIT commit all posts built
+      - name: Push built files
         env:
           CI_COMMIT_MESSAGE: Continuous Integration Build Posts
           CI_COMMIT_AUTHOR: CI
           BRANCH: deploy
-        run: |
-          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-          git config --global user.email "juliankominovic@gmail.com"
-          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+        uses: github-actions-x/commit@v2.9
         with:
-          github_token: ${{ secrets.GH_TOKEN }}
-          branch: ${{ env.BRANCH }}
+          github-token: ${{ secrets.GH_TOKEN }}
+          push-branch: "deploy"
+          commit-message: "Publish release [BOT][CI]"
+          force-add: "true"
+          name: ${{ env.CI_COMMIT_AUTHOR }}
+          email: juliankominovic@gmail.com
