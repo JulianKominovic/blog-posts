@@ -142,6 +142,12 @@ fastify.get("/common-post-tags", async function (request, reply) {
   reply.send(finalObject);
 });
 
+fastify.get("/", async function (request, reply) {
+  reply.status(200).send({
+    "health-check": "OK",
+  });
+});
+
 // Run the server!
 fastify.listen(process.env.PORT || 4000, function (err, address) {
   if (err) {
