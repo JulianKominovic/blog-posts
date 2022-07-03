@@ -12,9 +12,6 @@ jobs:
     steps:
       - run: echo "Seteando el entorno..."
       - uses: actions/checkout@v2
-        with:
-          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
-          fetch-depth: 0
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -22,15 +19,12 @@ jobs:
       - run: npm install --production
       - run: npm run build:posts
       - name: Push built files
-        env:
-          CI_COMMIT_MESSAGE: Continuous Integration Build Posts
-          CI_COMMIT_AUTHOR: CI
-          BRANCH: deploy
         uses: github-actions-x/commit@v2.9
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           push-branch: "deploy"
           commit-message: "Publish release [BOT][CI]"
           force-add: "true"
-          name: ${{ env.CI_COMMIT_AUTHOR }}
+          name: JulianKominovic [CI]
           email: juliankominovic@gmail.com
+          rebase: "true" # pull and rebase before commit
