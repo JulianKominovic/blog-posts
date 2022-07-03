@@ -38,7 +38,7 @@ You will like those projects!
 
 ### h3 Heading..
 
-#### h4 Heading....
+#### h4 Heading.
 
 ##### h5 Heading.
 
