@@ -26,6 +26,7 @@ jobs:
           push-branch: "deploy"
           commit-message: "Publish release [BOT][CI]"
           force-add: "true"
+          force-push: "true"
           name: JulianKominovic [CI]
           email: juliankominovic@gmail.com
           rebase: "true" # pull and rebase before commit
