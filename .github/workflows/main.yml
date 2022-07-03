@@ -18,7 +18,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install --production
       - run: npm run build:posts
-      - run: rm -rf ./static/posts/*.txt
+      - run: rm -rf ./static/posts/*.md
       - name: Push built files
         uses: github-actions-x/commit@v2.9
         with:
