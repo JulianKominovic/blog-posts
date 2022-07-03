@@ -44,7 +44,7 @@ You will like those projects!
 
 ###### h6 Heading.
 
-## Horizontal Rules
+## Horizontal Rules.
 
 ---
 
