@@ -29,4 +29,3 @@ jobs:
           force-push: "true"
           name: JulianKominovic [CI]
           email: juliankominovic@gmail.com
-          rebase: "true" # pull and rebase before commit
